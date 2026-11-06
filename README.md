@@ -13,7 +13,7 @@ that update at your monitor's refresh rate, with the preview pixels kept entirel
 Alt+Tab            open / next          Release Alt      switch to selection
 Alt+Shift+Tab      previous             Esc              cancel
 Arrows / hjkl      move in the grid     Enter / click    switch
-W / Q / Delete     close selected window (also middle-click or the × button)
+W/Q/Del/Backspace  close selected window (also middle-click or the × button)
 Scroll wheel       move selection       Click outside    cancel
 ```
 

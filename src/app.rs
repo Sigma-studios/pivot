@@ -85,6 +85,7 @@ pub struct Key(pub ObjectId);
 // evdev key codes (layout independent, which is what we want for Tab/arrows).
 mod key {
     pub const ESC: u32 = 1;
+    pub const BACKSPACE: u32 = 14;
     pub const TAB: u32 = 15;
     pub const Q: u32 = 16;
     pub const W: u32 = 17;
@@ -908,7 +909,7 @@ impl App {
                 let n = ov.entries.len().saturating_sub(1);
                 ov.select(n);
             }
-            key::W | key::Q | key::DELETE => self.close_selected(None),
+            key::W | key::Q | key::DELETE | key::BACKSPACE => self.close_selected(None),
             _ => {}
         }
     }
