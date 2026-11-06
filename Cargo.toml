@@ -1,0 +1,29 @@
+[package]
+name = "pivot"
+version = "0.1.0"
+edition = "2021"
+description = "GPU-backed live-preview Alt+Tab window switcher for the COSMIC desktop"
+license = "MIT"
+repository = "https://github.com/Sigma-studios/pivot"
+
+[dependencies]
+wayland-client = "0.31"
+wayland-backend = "0.3"
+wayland-protocols = { version = "0.32", features = ["client", "staging", "unstable"] }
+wayland-protocols-wlr = { version = "0.3", features = ["client"] }
+cosmic-protocols = { version = "0.2", default-features = false, features = ["client"] }
+gbm = { version = "0.18", default-features = false }
+rustix = { version = "1", features = ["fs", "event", "time", "shm", "mm", "pipe"] }
+tiny-skia = "0.11"
+cosmic-text = "0.14"
+resvg = "0.45"
+freedesktop-icons = "0.4"
+serde = { version = "1", features = ["derive"] }
+toml = "0.9"
+log = "0.4"
+env_logger = "0.11"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

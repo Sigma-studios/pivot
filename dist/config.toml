@@ -1,0 +1,49 @@
+# pivot configuration — every key is optional. Reloaded each time the switcher opens.
+
+# Preview refresh cap. 0 = no cap: each preview updates whenever its window redraws,
+# up to your monitor's refresh rate (60/144/240 Hz). Set e.g. 30 to save GPU on huge grids.
+max_fps = 0
+
+# Hold Alt this long before the grid appears; a quicker Alt+Tab tap just flips to the
+# previous window without flashing the UI.
+show_delay_ms = 70
+
+thumbnail_height = 190      # logical px; shrinks automatically to fit many windows
+min_thumbnail_height = 70
+max_width_fraction = 0.92   # of the output
+max_height_fraction = 0.86
+font_size = 13
+icon_size = 20
+corner_radius = 14
+
+# --- Look (see docs/styles/ for screenshots of each preset) ---
+panel_opacity = 0           # 0 = no panel, windows float over the backdrop (try 0.975 for a solid panel)
+border_width = 0            # panel outline in px, 0 = none
+# border_color = "#ffffff2e"
+card_opacity = 0            # rounded card behind each window (use with panel_opacity = 0)
+selection = "glow"          # both | outline | fill | underline | glow
+selection_width = 2
+
+# Contrast aids for transparent / panel-less looks (0..1 opacity, 0 = off). They keep titles and
+# previews readable over light wallpapers or white windows, which a plain backdrop can't.
+text_shadow = 0             # dark halo around titles
+thumb_shadow = 0            # soft drop shadow under each preview
+title_pill = 0              # dark pill behind each icon + title
+scrim = 0                   # feathered dark area behind the grid only...
+scrim_feather = 72          # ...fading out over this many px
+
+# "No panel" look that survives light backgrounds (docs/styles/light-bg/F-*):
+#   panel_opacity = 0, border_width = 0, selection = "glow", backdrop = "#00000047",
+#   scrim = 0.84, scrim_feather = 150, text_shadow = 0.6, thumb_shadow = 0.5
+
+theme = "auto"              # auto (follow COSMIC) | dark | light
+# accent = "#63d0df"        # default: COSMIC accent color
+# panel_color = "#1b1b1df0"
+# text_color = "#eeeeef"
+backdrop = "#000000a8"      # tint over the whole desktop while the switcher is open
+
+capture_buffers = 2         # 2 or 3 GPU buffers per preview (3 = smoother at high Hz, more VRAM)
+include_minimized = true
+paint_cursors = false
+force_shm = false           # debug: capture through CPU memory instead of dmabuf
+# icon_theme = "Cosmic"     # default: COSMIC's configured icon theme
