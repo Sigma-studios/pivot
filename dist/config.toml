@@ -8,6 +8,9 @@ max_fps = 0
 # previous window without flashing the UI.
 show_delay_ms = 70
 
+# Once the grid appears, the backdrop tint fades in over this long. 0 = appears at once.
+fade_ms = 120
+
 thumbnail_height = 190      # logical px; shrinks automatically to fit many windows
 min_thumbnail_height = 70
 max_width_fraction = 0.92   # of the output

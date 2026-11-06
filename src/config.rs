@@ -36,6 +36,9 @@ pub struct Config {
     /// How long Alt must stay held before the switcher becomes visible. A quick Alt+Tab tap
     /// switches to the previous window without flashing the UI (like Windows).
     pub show_delay_ms: u64,
+    /// How long the backdrop takes to fade from nothing to its full tint once the switcher
+    /// appears. 0 = no fade.
+    pub fade_ms: u64,
     /// Preferred thumbnail height in logical pixels. Shrinks automatically to fit many windows.
     pub thumbnail_height: f32,
     pub min_thumbnail_height: f32,
@@ -87,6 +90,7 @@ impl Default for Config {
         Self {
             max_fps: 0,
             show_delay_ms: 70,
+            fade_ms: 120,
             thumbnail_height: 190.0,
             min_thumbnail_height: 70.0,
             max_width_fraction: 0.92,
@@ -148,6 +152,7 @@ impl Config {
             Err(_) => Config::default(),
         };
         cfg.capture_buffers = cfg.capture_buffers.clamp(2, 3);
+        cfg.fade_ms = cfg.fade_ms.min(1000);
         cfg.thumbnail_height = cfg.thumbnail_height.clamp(40.0, 1000.0);
         cfg.min_thumbnail_height = cfg.min_thumbnail_height.clamp(30.0, cfg.thumbnail_height);
         cfg.max_width_fraction = cfg.max_width_fraction.clamp(0.2, 1.0);

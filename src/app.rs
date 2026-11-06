@@ -117,6 +117,8 @@ const MOD_SHIFT: u32 = 1 << 0;
 const MOD_CTRL: u32 = 1 << 2;
 const MOD_ALT: u32 = 1 << 3;
 const MOD_SUPER: u32 = 1 << 6;
+/// Backdrop tints in a fade: enough to look smooth at 144 Hz over ~120 ms.
+const FADE_STEPS: usize = 12;
 const BTN_LEFT: u32 = 0x110;
 const BTN_MIDDLE: u32 = 0x112;
 
@@ -160,7 +162,13 @@ struct Overlay {
     layer: ZwlrLayerSurfaceV1,
     root_viewport: WpViewport,
     fractional: Option<WpFractionalScaleV1>,
-    backdrop: Option<WlBuffer>,
+    /// 1x1 backdrop tints from transparent (index 0) to the configured tint (last), so the
+    /// fade only ever swaps buffers and never destroys one the compositor may still show.
+    backdrops: Vec<WlBuffer>,
+    /// Index of the tint attached to the root surface.
+    backdrop_step: usize,
+    /// When the backdrop starts fading in (set when the grid becomes visible).
+    fade_from: Option<Instant>,
     panel: Panel,
     entries: Vec<Entry>,
     configured: bool,
@@ -425,6 +433,9 @@ impl App {
         if ov.configured && !ov.visible {
             consider(ov.show_at);
         }
+        if let Some(t) = self.next_fade_step(ov) {
+            consider(t);
+        }
         for e in &ov.entries {
             if let Some(t) = e.cap.as_ref().filter(|c| c.frame.is_none() && !c.stopped).and_then(|c| c.next_at) {
                 consider(t);
@@ -508,7 +519,9 @@ impl App {
             layer,
             root_viewport,
             fractional,
-            backdrop: None,
+            backdrops: Vec::new(),
+            backdrop_step: 0,
+            fade_from: None,
             panel,
             entries,
             configured: false,
@@ -560,7 +573,7 @@ impl App {
         }
         ov.layer.destroy();
         ov.root.destroy();
-        if let Some(b) = ov.backdrop {
+        for b in ov.backdrops {
             b.destroy();
         }
         self.renderer.trim();
@@ -627,6 +640,10 @@ impl App {
             ov.visible = true;
             ov.needs_layout = true;
             ov.needs_render = true;
+            ov.fade_from = Some(now);
+        }
+        if ov.visible {
+            self.step_fade(&mut ov, now);
         }
         if ov.needs_layout {
             self.apply_layout(&mut ov);
@@ -755,20 +772,68 @@ impl App {
         Some(ShmBuf { buffer, map: map?, width: w, height: h, busy })
     }
 
+    /// Creates the backdrop tints on first configure and attaches the transparent one: the
+    /// layer surface needs a buffer to be mapped, but nothing may darken the screen before
+    /// the grid is visible (a quick Alt+Tab tap never shows the switcher at all).
     fn ensure_backdrop(&mut self, ov: &mut Overlay) {
-        if ov.backdrop.is_some() {
+        if !ov.backdrops.is_empty() {
             return;
         }
-        let Ok((fd, map)) = buffers::shm_file(4, true) else { return };
-        if let Some(mut m) = map {
-            m.as_mut_slice().copy_from_slice(&self.palette.backdrop.to_argb_premul().to_ne_bytes());
+        let steps = if self.cfg.fade_ms == 0 { 1 } else { FADE_STEPS };
+        let target = self.palette.backdrop;
+        for i in 0..=steps {
+            let tint = target.with_alpha(target.a * i as f32 / steps as f32);
+            let Ok((fd, map)) = buffers::shm_file(4, true) else { break };
+            if let Some(mut m) = map {
+                m.as_mut_slice().copy_from_slice(&tint.to_argb_premul().to_ne_bytes());
+            }
+            let pool = self.shm.create_pool(fd.as_fd(), 4, &self.qh, ());
+            let buffer = pool.create_buffer(0, 1, 1, 4, wl_shm::Format::Argb8888, &self.qh, BusyFlag::default());
+            pool.destroy();
+            ov.backdrops.push(buffer);
         }
-        let pool = self.shm.create_pool(fd.as_fd(), 4, &self.qh, ());
-        let buffer = pool.create_buffer(0, 1, 1, 4, wl_shm::Format::Argb8888, &self.qh, BusyFlag::default());
-        pool.destroy();
-        ov.root.attach(Some(&buffer), 0, 0);
-        ov.root.damage_buffer(0, 0, 1, 1);
-        ov.backdrop = Some(buffer);
+        if let Some(first) = ov.backdrops.first() {
+            ov.root.attach(Some(first), 0, 0);
+            ov.root.damage_buffer(0, 0, 1, 1);
+        }
+        ov.backdrop_step = 0;
+    }
+
+    /// The tint the fade has reached at `now`.
+    fn fade_target(&self, ov: &Overlay, now: Instant) -> usize {
+        let last = ov.backdrops.len().saturating_sub(1);
+        match ov.fade_from {
+            None => 0,
+            Some(_) if self.cfg.fade_ms == 0 => last,
+            Some(t) => {
+                let f = now.saturating_duration_since(t).as_secs_f32() / (self.cfg.fade_ms as f32 / 1000.0);
+                ((f.clamp(0.0, 1.0) * last as f32).ceil() as usize).min(last)
+            }
+        }
+    }
+
+    fn step_fade(&mut self, ov: &mut Overlay, now: Instant) {
+        let step = self.fade_target(ov, now);
+        if step == ov.backdrop_step {
+            return;
+        }
+        if let Some(b) = ov.backdrops.get(step) {
+            ov.root.attach(Some(b), 0, 0);
+            ov.root.damage_buffer(0, 0, 1, 1);
+            ov.root.commit();
+            ov.backdrop_step = step;
+        }
+    }
+
+    /// When the next tint is due, while fading.
+    fn next_fade_step(&self, ov: &Overlay) -> Option<Instant> {
+        let start = ov.fade_from?;
+        let last = ov.backdrops.len().saturating_sub(1);
+        if ov.backdrop_step >= last || self.cfg.fade_ms == 0 {
+            return None;
+        }
+        let per = Duration::from_secs_f32(self.cfg.fade_ms as f32 / 1000.0 / last as f32);
+        Some(start + per * (ov.backdrop_step as u32 + 1))
     }
 
     // ------------------------------------------------------------------------------------------
