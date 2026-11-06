@@ -824,6 +824,9 @@ impl App {
             return;
         }
         if let Some(b) = ov.backdrops.get(step) {
+            if ov.backdrop_step == 0 {
+                log::debug!("dimming started {:?} after Alt+Tab", now.saturating_duration_since(ov.opened));
+            }
             ov.root.attach(Some(b), 0, 0);
             ov.root.damage_buffer(0, 0, 1, 1);
             ov.root.commit();
