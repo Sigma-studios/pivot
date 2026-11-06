@@ -8,7 +8,7 @@ jobs:
   cargo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: sudo apt-get update && sudo apt-get install -y libgbm-dev
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -21,7 +21,7 @@ jobs:
   nix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v31
       - run: nix build -L .#pivot
       - run: nix flake check -L

@@ -357,7 +357,7 @@ fn halo(text: &Pixmap, r: u32, opacity: f32) -> Option<Pixmap> {
         box_blur(&tmp, &mut a, w as usize, h as usize, r as usize, false);
     }
     let mut pm = Pixmap::new(w, h)?;
-    for (px, v) in pm.data_mut().chunks_exact_mut(4).zip(&a) {
+    for (px, v) in pm.data_mut().as_chunks_mut::<4>().0.iter_mut().zip(&a) {
         // Boost so the halo reads as a solid edge rather than a faint smudge.
         px[3] = (v * 1.8 * opacity).min(255.0) as u8;
     }

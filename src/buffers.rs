@@ -164,11 +164,11 @@ pub const fn fourcc(c: &[u8; 4]) -> u32 {
 
 /// Read a native-endian array of `T` from a wayland `array` argument.
 pub fn ne_u32s(bytes: &[u8]) -> impl Iterator<Item = u32> + '_ {
-    bytes.chunks_exact(4).map(|c| u32::from_ne_bytes(c.try_into().unwrap()))
+    bytes.as_chunks::<4>().0.iter().map(|c| u32::from_ne_bytes(*c))
 }
 
 pub fn ne_u64s(bytes: &[u8]) -> impl Iterator<Item = u64> + '_ {
-    bytes.chunks_exact(8).map(|c| u64::from_ne_bytes(c.try_into().unwrap()))
+    bytes.as_chunks::<8>().0.iter().map(|c| u64::from_ne_bytes(*c))
 }
 
 pub fn dev_t_from_bytes(bytes: &[u8]) -> Option<u64> {

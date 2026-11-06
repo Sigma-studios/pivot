@@ -44,7 +44,7 @@ shared-memory capture for that window automatically. That fallback works but is 
   `zcosmic_toplevel_info_v1` v2+, `zcosmic_toplevel_manager_v1`, `zwlr_layer_shell_v1`,
   `ext_image_copy_capture_manager_v1` and `ext_foreign_toplevel_image_capture_source_manager_v1`.
   Without the two capture globals, pivot still works but shows icons instead of previews.
-- Building from source: Rust ≥ 1.80 and libgbm (`sudo apt install libgbm-dev` on Pop!_OS).
+- Building from source: Rust ≥ 1.88 and libgbm (`sudo apt install libgbm-dev` on Pop!_OS).
 
 ## Install
 

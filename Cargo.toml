@@ -2,6 +2,7 @@
 name = "pivot"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.88"
 description = "GPU-backed live-preview Alt+Tab window switcher for the COSMIC desktop"
 license = "MIT"
 repository = "https://github.com/Sigma-studios/pivot"
