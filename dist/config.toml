@@ -13,6 +13,9 @@ show_when_ready = false
 
 # Once the grid appears, the backdrop tint fades in over this long. 0 = appears at once.
 fade_ms = 120
+# Start that fade at the Alt+Tab press instead of when the grid appears: instant feedback,
+# but a quick tap dims the screen briefly too.
+dim_on_press = false
 
 thumbnail_height = 190      # logical px; shrinks automatically to fit many windows
 min_thumbnail_height = 70

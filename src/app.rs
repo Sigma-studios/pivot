@@ -645,11 +645,12 @@ impl App {
             ov.visible = true;
             ov.needs_layout = true;
             ov.needs_render = true;
-            ov.fade_from = Some(now);
+            ov.fade_from.get_or_insert(now);
         }
-        if ov.visible {
-            self.step_fade(&mut ov, now);
+        if self.cfg.dim_on_press {
+            ov.fade_from.get_or_insert(now);
         }
+        self.step_fade(&mut ov, now);
         if ov.needs_layout {
             self.apply_layout(&mut ov);
         }

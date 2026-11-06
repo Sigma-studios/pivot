@@ -43,6 +43,9 @@ pub struct Config {
     /// How long the backdrop takes to fade from nothing to its full tint once the switcher
     /// appears. 0 = no fade.
     pub fade_ms: u64,
+    /// Start dimming as soon as Alt+Tab is pressed instead of when the grid appears, for
+    /// immediate feedback. Quick taps then dim the screen briefly too.
+    pub dim_on_press: bool,
     /// Preferred thumbnail height in logical pixels. Shrinks automatically to fit many windows.
     pub thumbnail_height: f32,
     pub min_thumbnail_height: f32,
@@ -96,6 +99,7 @@ impl Default for Config {
             show_delay_ms: 70,
             show_when_ready: false,
             fade_ms: 120,
+            dim_on_press: false,
             thumbnail_height: 190.0,
             min_thumbnail_height: 70.0,
             max_width_fraction: 0.92,
