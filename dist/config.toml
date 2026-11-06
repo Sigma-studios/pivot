@@ -7,6 +7,9 @@ max_fps = 0
 # Hold Alt this long before the grid appears; a quicker Alt+Tab tap just flips to the
 # previous window without flashing the UI.
 show_delay_ms = 70
+# Or show it as soon as every preview is ready (show_delay_ms is then only the latest it
+# appears). Faster on a held Alt+Tab; a quick tap may flash the grid.
+show_when_ready = false
 
 # Once the grid appears, the backdrop tint fades in over this long. 0 = appears at once.
 fade_ms = 120

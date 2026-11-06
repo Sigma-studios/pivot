@@ -180,6 +180,8 @@ struct Overlay {
     close_hover: bool,
     visible: bool,
     show_at: Instant,
+    /// When the switcher was asked for, for the first-frame timings in the debug log.
+    opened: Instant,
     sticky: bool,
     has_focus: bool,
     pressed: HashSet<u32>,
@@ -533,6 +535,7 @@ impl App {
             close_hover: false,
             visible: false,
             show_at: Instant::now() + Duration::from_millis(delay),
+            opened: Instant::now(),
             sticky,
             has_focus: false,
             pressed: HashSet::new(),
@@ -636,7 +639,9 @@ impl App {
             self.overlay = Some(ov);
             return;
         }
-        if !ov.visible && now >= ov.show_at {
+        let all_ready = || ov.entries.iter().all(|e| e.cap.as_ref().is_none_or(|c| c.has_frame || c.stopped));
+        if !ov.visible && (now >= ov.show_at || (self.cfg.show_when_ready && all_ready())) {
+            log::debug!("grid shown {:?} after Alt+Tab", now.saturating_duration_since(ov.opened));
             ov.visible = true;
             ov.needs_layout = true;
             ov.needs_render = true;
@@ -1446,6 +1451,9 @@ impl Dispatch<ExtImageCopyCaptureFrameV1, Key> for App {
                     cap.failures = 0;
                     let first = !cap.has_frame;
                     cap.has_frame = true;
+                    if first {
+                        log::debug!("window {i}: first frame {:?} after Alt+Tab", ov.opened.elapsed());
+                    }
                     if visible {
                         present(e.surface.clone(), &e.viewport, e.placed, cap, slot);
                     } else {

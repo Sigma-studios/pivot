@@ -36,6 +36,10 @@ pub struct Config {
     /// How long Alt must stay held before the switcher becomes visible. A quick Alt+Tab tap
     /// switches to the previous window without flashing the UI (like Windows).
     pub show_delay_ms: u64,
+    /// Show the grid as soon as every preview has its first frame, without waiting for
+    /// `show_delay_ms` (which is then only the latest it appears). Quick Alt+Tab taps may
+    /// flash the grid.
+    pub show_when_ready: bool,
     /// How long the backdrop takes to fade from nothing to its full tint once the switcher
     /// appears. 0 = no fade.
     pub fade_ms: u64,
@@ -90,6 +94,7 @@ impl Default for Config {
         Self {
             max_fps: 0,
             show_delay_ms: 70,
+            show_when_ready: false,
             fade_ms: 120,
             thumbnail_height: 190.0,
             min_thumbnail_height: 70.0,
